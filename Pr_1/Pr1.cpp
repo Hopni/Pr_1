@@ -2,22 +2,23 @@
 //
 
 #include "stdafx.h"
-#include "Header.h"
+#include "KSet.h"
 #include <iostream>	
 #include <algorithm>
 
 using namespace std;
 
 int main()
-
 {
-	KSet<int> a{ 1, 2, 3, 5, 7 }, b{ 0, 1, 3, 4, 5 };
-	cout << a.get_pos(5) << " " << b.get_size();
-	a.display();
-	b.display();
-	//a[b];
-	//a.Swap(b);
-	//a.display();
-	//b.display();
+	KSet<int> test{ 1, 2, 3 }, test1{ 1, 2, 5 };
+	test.Display();
+	test1.Display();
+	test += test1;
+	test.Display();
+	test.Swap(test1);
+	test.Display();
+	cout << endl << endl;
+	KSet<int> res(test);
+	res = test + test1;
+	res.Display();;
 }
-

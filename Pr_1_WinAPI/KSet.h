@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <iostream>
 
 template<typename T>
 struct Node
@@ -58,42 +59,42 @@ public:
 		tail = NULL;
 		size = 0;
 	}
-	KSet(const KSet<T>&& o) : KSet()
+	KSet(const KSet<T>&& other) : KSet()
 	{
-		*this = o;
+		*this = other;
+		other.Clear();
+	}
+	KSet(const KSet<T>& other) : KSet()
+	{
+		*this = other;
 	}
 	KSet(std::initializer_list<T> list)
 	{
 		for (auto& item : list)
 		{
-			bool q = true;
-			for (int i = 1; i < size; i++)
-			{
-				if (item == this->get_pos(i))
-					q = false;
-			}
-			if(q)
-				this->push_back(item);
+			if(!(this->Search(item)) || size == 0)
+				this->Insert(item);
 		}
-		this->sort();
+		this->Sort();
 	}
 	Node<T>* create_Node(T);
-	void push_back(T);
+	void Insert(T);
 	void insert_pos(T, unsigned);
 	void push_front(T);
 	T pop_back();
 	T& get_first() const;
-	T& get_pos(unsigned) const;
-	unsigned get_size() const;
-	void delete_pos(unsigned);
-	void sort();
-	bool search(T) const;
+	T& Get_Pos(unsigned) const;
+	unsigned Size() const;
+	void Erase(unsigned);
+	void Sort();
+	bool Search(T) const;
 	void update(T, unsigned);
 	void reverse();
-	void display();
-	void erase();
+	void Display();
+	void Clear();
 	_iter begin();
 	_iter end();
+	KSet<T>& operator = (KSet<T>&&);
 	KSet<T>& operator = (KSet<T>&);
 	void operator+=(const KSet<T>&);
 	KSet<T>& operator+(const KSet<T>&);
@@ -109,7 +110,7 @@ public:
 	void Swap(KSet<T>&);
 	~KSet()
 	{
-		erase();
+		Clear();
 	}
 };
 
@@ -120,7 +121,7 @@ Node<T> *KSet<T>::create_Node(T value)
 	temp = new(Node<T>);
 	if (temp == NULL)
 	{
-		cout << "Memory not allocated " << endl;
+//		cout << "Memory not allocated " << endl;
 		return 0;
 	}
 	else
@@ -131,8 +132,10 @@ Node<T> *KSet<T>::create_Node(T value)
 	}
 }
 template<typename T>
-void KSet<T>::push_back(T value)
+void KSet<T>::Insert(T value)
 {
+	if (!(this->Search(value)))
+	{
 		size++;
 		Node<T> *temp, *p;
 		temp = create_Node(value);
@@ -147,6 +150,8 @@ void KSet<T>::push_back(T value)
 			tail = temp;
 			tail->next = p;
 		}
+		this->Sort();
+	}
 }
 template<typename T>
 void KSet<T>::push_front(T value)
@@ -164,54 +169,51 @@ void KSet<T>::push_front(T value)
 template<typename T>
 T KSet<T>::pop_back()
 {
-	T val = get_first();
-	delete_pos(1);
-	return val;
+	Erase(0);
+	return this->get_first();
 }
 template<typename T>
 T& KSet<T>::get_first() const
 {
-	return get_pos(1);
+	return Get_Pos(0);
 }
 template<typename T>
-T& KSet<T>::get_pos(unsigned pos) const
+T& KSet<T>::Get_Pos(unsigned pos) const
 {
-	T def = T();
+	T null = T();
 	if (tail == NULL)
 	{
-		cout << "\nList is empty" << endl;
-		return def;
+		//cout << "\nList is empty" << endl;
+		return null;
 	}
-	Node<T> *s, *ptr;
-	s = tail;
-	if (pos > 0 && pos <= size)
+
+	Node<T> *ptr;
+	ptr = tail;
+	if (pos >= 0 && pos < size)
 	{
-		for (int i = 1; i < pos; i++)
+		for (int i = 0; i < pos; i++)
 		{
-			ptr = s;
-			s = s->next;
+			ptr = ptr->next;
 		}
-		return s->info;
+		return ptr->info;
 	}
 	else
 	{
-		cout << "\nPosition out of range" << endl;
-		return def;
+		//cout << "\nPosition out of range" << endl;
+		return null;
 	}
 }
 template<typename T>
-unsigned KSet<T>::get_size() const
+unsigned KSet<T>::Size() const
 {
 	return size;
 }
 template<typename T>
 void KSet<T>::insert_pos(T value, unsigned pos)
 {
-	size++;
-	int counter = 0;
 	Node<T> *temp, *s, *ptr;
 	temp = create_Node(value);
-	if (pos == 1)
+	if (pos == 0)
 	{
 		if (tail == NULL)
 		{
@@ -224,32 +226,33 @@ void KSet<T>::insert_pos(T value, unsigned pos)
 			tail = temp;
 			tail->next = ptr;
 		}
+		size++;
 	}
-	else if (pos > 1 && pos <= size)
+	else if (pos > 0 && pos < size)
 	{
 		s = tail;
-		for (auto i = 1; i < pos; i++)
+		for (auto i = 0; i < pos - 1; i++)
 		{
-			ptr = s;
 			s = s->next;
 		}
-		ptr->next = temp;
-		temp->next = s;
+		ptr = s->next;
+		s->next = temp;
+		temp->next = ptr;
+		size++;
 	}
 	else
 	{
-		cout << "\nPositon out of range" << endl;
-		size--;
+		//cout << "\nPositon out of range" << endl;
 	}
 }
 template<typename T>
-void KSet<T>::sort()
+void KSet<T>::Sort()
 {
 	Node<T> *ptr, *s;
 	int value;
 	if (tail == NULL)
 	{
-		cout << "\nList is empty" << endl;
+		//cout << "\nList is empty" << endl;
 		return;
 	}
 	ptr = tail;
@@ -266,7 +269,7 @@ void KSet<T>::sort()
 	}
 }
 template<typename T>
-void KSet<T>::delete_pos(unsigned pos)
+void KSet<T>::Erase(unsigned pos)
 {
 	if (tail == NULL)
 		return;
@@ -287,7 +290,7 @@ void KSet<T>::delete_pos(unsigned pos)
 		}
 		else
 		{
-			cout << "\nPosition out of range" << endl;
+		//	cout << "\nPosition out of range" << endl;
 			size++;
 		}
 	}
@@ -311,7 +314,7 @@ void KSet<T>::update(T value, unsigned pos)
 		{
 			if (s == NULL)
 			{
-				cout << "\nThere are less than " << pos << " elements";
+			//	cout << "\nThere are less than " << pos << " elements";
 				return;
 			}
 			s = s->next;
@@ -320,14 +323,13 @@ void KSet<T>::update(T value, unsigned pos)
 	}
 }
 template<typename T>
-bool KSet<T>::search(T value) const
+bool KSet<T>::Search(T value) const
 {
 	int pos = 0;
 	bool flag = false;
 	if (tail == NULL)
 	{
-		cout << "\nList is empty" << endl;
-		return 0;
+		return false;
 	}
 	Node<T> *s;
 	s = tail;
@@ -367,33 +369,33 @@ void KSet<T>::reverse()
 	tail = ptr2;
 }
 template<typename T>
-void KSet<T>::display()
+void KSet<T>::Display()
 {
 	Node<T> *temp;
 	if (tail == NULL)
 	{
-		cout << "\nList is empty" << endl;
+		//cout << "\nList is empty" << endl;
 		return;
 	}
 	temp = tail;
-	cout << "\nElements of list are: " << endl;
+	//cout << "\nElements of list are: " << endl;
 	while (temp != NULL)
 	{
-		cout << temp->info << " ";
+		//cout << temp->info << " ";
 		temp = temp->next;
 	}
 }
 template<typename T>
-void KSet<T>::erase()
+void KSet<T>::Clear()
 {
 	while (tail != NULL)
-		delete_pos(1);
+		Erase(1);
 }
 template<typename T>
 iter_class<T> KSet<T>::end()
 {
 	Node<T>* s = tail;
-	for (auto i = 1; i < get_size(); i++)
+	for (auto i = 0; i < Size(); i++)
 		s = s->next;
 	return iter_class<T>(s);
 }
@@ -403,45 +405,60 @@ iter_class<T> KSet<T>::begin()
 	return iter_class<T>(tail);
 }
 template<typename T>
-KSet<T>& KSet<T>::operator = (KSet<T>& o)
+KSet<T>& KSet<T>::operator = (KSet<T>&& o)
 {
-	erase();
+	this->Clear();
 	Node<T> *s;
 	s = o.tail;
-	for (auto i = 1; i <= o.get_size(); i++)
+	for (auto i = 0; i < o.Size(); i++)
 	{
-		push_back(s->info);
+		Insert(s->info);
 		s = s->next;
 	}
-	o.erase();
+	o.Clear();
 	return *this;
 }
 
 template<typename T>
+KSet<T>& KSet<T>::operator = (KSet<T>& o)
+{
+	this->Clear();
+	Node<T> *s;
+	s = o.tail;
+	for (auto i = 0; i < o.Size(); i++)
+	{
+		Insert(s->info);
+		s = s->next;
+	}
+	return *this;
+}
+
+
+template<typename T>
 void KSet<T>::operator+=(const KSet<T>& a)
 {
-	for (int i = 1; i <= a.get_size(); i++)
+	for (int i = 0; i < a.Size(); i++)
 	{
-		if (!(this->search(a.get_pos(i))))
-			this->push_back(a.get_pos(i));
+		if (!(this->Search(a.Get_Pos(i))))
+			this->Insert(a.Get_Pos(i));
 	}
-	this->sort();
+	this->Sort();
 }
 
 template<typename T>
 KSet<T>& KSet<T>::operator+(const KSet<T>& a)
 {
 	KSet<T> buff;
-	for (int i = 1; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
-		buff.push_back(this->get_pos(i));
+		buff.Insert(this->Get_Pos(i));
 	}
-	for (int i = 0; i < a.get_size(); i++)
+	for (int i = 0; i < a.Size(); i++)
 	{
-		if (!(this->search(a.get_pos(i))))
-			buff.push_back(a.get_pos(i));
+		if (!(this->Search(a.Get_Pos(i))))
+			buff.Insert(a.Get_Pos(i));
 	}
-	buff.sort();
+	buff.Sort();
 	return buff;
 }
 
@@ -449,38 +466,37 @@ template<typename T>
 void KSet<T>::operator*=(const KSet<T>& a)
 {
 	KSet<T> buff;
-	for (int i = 1; i <= size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		bool q = false;
-		for (int j = 1; j <= a.get_size(); j++)
+		for (int j = 0; j < a.Size(); j++)
 		{
-			if (this->get_pos(i) == a.get_pos(j))
+			if (this->Get_Pos(i) == a.Get_Pos(j))
 			{
-				buff.push_back(a.get_pos(j));
+				buff.Insert(a.Get_Pos(j));
 			}
 		}
 	}
-	this->erase();
-	for (int i = 0; i < buff.get_size(); i++)
-		this->push_back(buff.get_pos(i + 1));
+	this->Clear();
+	*this = buff;
 }
 
 template<typename T>
 KSet<T>& KSet<T>::operator*(const KSet<T>& a)
 {
 	KSet<T> buff;
-	for (int i = 1; i <= size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		bool q = false;
-		for (int j = 0; j <= a.get_size(); j++)
+		for (int j = 0; j < a.Size(); j++)
 		{
-			if (this->get_pos(i) == a.get_pos(j))
+			if (this->Get_Pos(i) == a.Get_Pos(j))
 				q = true;
 		}
 		if (q)
-			buff.push_back(this->get_pos(i));
+			buff.Insert(this->Get_Pos(i));
 	}
-	buff.sort();
+	buff.Sort();
 	return buff;
 }
 
@@ -488,34 +504,33 @@ template<typename T>
 void KSet<T>::operator/=(const KSet<T>& a)
 {
 	KSet<T> buff;
-	for (int i = 1; i <= size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		bool q = false;
-		for (int j = 1; j <= a.get_size(); j++)
+		for (int j = 0; j < a.Size(); j++)
 		{
-			if (this->get_pos(i) == a.get_pos(j))
+			if (this->Get_Pos(i) == a.Get_Pos(j))
 			{
 				q = true;
 			}
 		}
 		if (!q)
-			buff.push_back(this->get_pos(i));
+			buff.Insert(this->Get_Pos(i));
 	}
-	this->erase();
-	for (int i = 0; i < buff.get_size(); i++)
-		this->push_back(buff.get_pos(i + 1));
+	this->Clear();
+	*this = buff;
 }
 
 template<typename T>
 KSet<T>& KSet<T>::operator/(const KSet<T>& a)
 {
 	KSet<T> buff;
-	for (int i = 1; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
-		if (!(a.search(this->get_pos(i))))
-			buff.push_back(this->get_pos(i));
+		if (!(a.Search(this->Get_Pos(i))))
+			buff.Insert(this->Get_Pos(i));
 	}
-	buff.sort();
+	buff.Sort();
 	return buff;
 }
 
@@ -523,13 +538,13 @@ template<typename T>
 void KSet<T>::operator-=(const KSet<T>& a)
 {
 	KSet<T> buff, buff1;
-	for (int i = 1; i <= size; i++)
+	for (int i = 0; i <= size; i++)
 	{
-		buff.push_back(this->get_pos(i));
+		buff.Insert(this->Get_Pos(i));
 	}
-	for (int i = 1; i <= a.get_size(); i++)
+	for (int i = 0; i <= a.Size(); i++)
 	{
-		buff1.push_back(a.get_pos(i));
+		buff1.Insert(a.Get_Pos(i));
 	}
 	*this /= a;
 	buff1 /= buff;
@@ -540,13 +555,13 @@ template<typename T>
 KSet<T>& KSet<T>::operator-(const KSet<T>& a)
 {
 	KSet<T> buff, res;
-	for (int i = 1; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
-		buff.push_back(this->get_pos(i));
+		buff.Insert(this->Get_Pos(i));
 	}
-	for (int i = 1; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
-		res.push_back(this->get_pos(i));
+		res.Insert(this->Get_Pos(i));
 	}
 	res /= a;
 	a /= buff;
@@ -557,9 +572,9 @@ KSet<T>& KSet<T>::operator-(const KSet<T>& a)
 template<typename T>
 bool KSet<T>::operator==(const KSet<T>& a)
 {
-	for (int i = 1; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
-		if (!(this->search(a.get_pos(i))))
+		if (!(this->Search(a.Get_Pos(i))))
 			return false;
 	}
 	return true;
@@ -568,10 +583,10 @@ bool KSet<T>::operator==(const KSet<T>& a)
 template<typename T>
 bool KSet<T>::operator<=(const KSet<T>& a)
 {
-	int n = size < a.get_size() ? size : a.get_size();
-	for (int i = 1; i < n; i++)
+	int n = size < a.Size() ? size : a.Size();
+	for (int i = 0; i < n; i++)
 	{
-		if (this->get_pos(i) > a.get_pos(i))
+		if (this->Get_Pos(i) > a.Get_Pos(i))
 			return false;
 	}
 	return true;
@@ -581,11 +596,11 @@ template<typename T>
 KSet<T>& KSet<T>::operator[](const KSet<T>& a)
 {
 	KSet<T> res;
-	for (int j = 1, i = 1; j < a.get_size(); j++)
+	for (int j = 0, i = 0; j < a.Size(); j++)
 	{
 
 	}
-	res.sort();
+	res.Sort();
 	return res;
 }
 
@@ -595,14 +610,11 @@ void KSet<T>::Swap(KSet<T>& a)
 	KSet<T> buff;
 	for (int i = 1; i < size; i++)
 	{
-		buff.push_back(this->get_pos(i));
+		buff.Insert(this->Get_Pos(i));
 	}
 	
-	this->erase();
-	for (int i = 1; i < a.get_size(); i++)
-	{
-		this->push_back(a.get_pos(i));
-	}
-	this->sort();
+	this->Clear();
+	*this = a;
+	this->Sort();
 	a = buff;
 }
