@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "Pr1WinAPI.h"
-#include "KSet.h"
+#include "MVC.h"
 #include <string>
 using namespace std;
 
@@ -108,8 +108,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   //ShowWindow(hWnd, nCmdShow);
+   //UpdateWindow(hWnd);
 
    return TRUE;
 }
@@ -124,12 +124,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
-KSet<int> kset{ 1, 5, 10 }, kset1{ 1, 7, 15 }, res1, res2;
+Model<int> model_1{ 1, 5, 10 }, model_2{ 1, 7, 15 };
+View<int> view(model_1, model_2);
+Controller<int> cnt(model_1, model_2, view);
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
 	case WM_CREATE:
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 		break;
 	case WM_COMMAND:
 	{
@@ -142,11 +146,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			InvalidateRect(hWnd, NULL, true);
 			break;
 		case IDM_EXIT:
-			res2 = kset;
-			kset += kset1;
-			res1 = kset;
-			kset = res2;
-			res2 *= kset1;
+			InvalidateRect(hWnd, NULL, true);
+			break;
+		case ID_FILE_INTERSECTION:
+
+			InvalidateRect(hWnd, NULL, true);
+			break;
+		case ID_FILE_SIZE:
 			InvalidateRect(hWnd, NULL, true);
 			break;
 		default:
@@ -156,29 +162,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_PAINT:
 	{
-		int s = 0;
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
-		TextOut(hdc, 0, 0, L"KSet 1", 6);
-		TextOut(hdc, 100, 0, L"KSet 2", 6);
-		for (int i = 0; i < kset.Size(); i++)
-		{
-			TextOut(hdc, 0, i*20 + 20, to_wstring(kset.Get_Pos(i)).c_str(), to_wstring(kset.Get_Pos(i)).size());
-		}
-		for (int i = 0; i < kset1.Size(); i++)
-		{
-			TextOut(hdc, 100, i * 20 + 20, to_wstring(kset1.Get_Pos(i)).c_str(), to_wstring(kset1.Get_Pos(i)).size());
-		}
-		TextOut(hdc, 200, 0, L"Union", 6);
-		for (int i = 0; i < res1.Size(); i++)
-		{
-			TextOut(hdc, 200, i * 20 + 20, to_wstring(res1.Get_Pos(i)).c_str(), to_wstring(res1.Get_Pos(i)).size());
-		}
-		TextOut(hdc, 300, 0, L"Intersection", 12);
-		for (int i = 0; i < res2.Size(); i++)
-		{
-			TextOut(hdc, 300, i * 20 + 20, to_wstring(res2.Get_Pos(i)).c_str(), to_wstring(res2.Get_Pos(i)).size());
-		}
+		//view.Display(hdc, 0, 0, L"Model");
 	}
 	break;
 	case WM_DESTROY:
@@ -193,35 +179,5 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-	switch (LOWORD(wParam))
-	{
-	case ID_ENTER1:
-	{
-		auto a = GetDlgItemInt(hDlg, IDC_EDIT1, NULL, true);
-		kset.Insert(a);
-		InvalidateRect(GetParent(hDlg), NULL, true);
-		break;
-	}
-	case ID_ENTER2:
-	{
-		auto b = GetDlgItemInt(hDlg, IDC_EDIT2, NULL, true);
-		kset1.Insert(b);
-		InvalidateRect(GetParent(hDlg), NULL, true);
-		break;
-	}
-	case IDCANCEL:
-		EndDialog(hDlg, LOWORD(wParam));
-		return (INT_PTR)TRUE;
-		break;
-	}
-	break;
-	}
-	return (INT_PTR)FALSE;
+	return view.ButtonEvent(hDlg, message, wParam, lParam);
 }
