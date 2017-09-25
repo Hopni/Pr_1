@@ -45,11 +45,13 @@ IDC_PR1WINAPI MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Result",                      IDM_EXIT
+        MENUITEM "Union",                       IDM_EXIT
+        MENUITEM "Intersection",                ID_FILE_INTERSECTION
+        MENUITEM "Size",                        ID_FILE_SIZE
     END
-    POPUP "&Help"
+    POPUP "Enter"
     BEGIN
-        MENUITEM "&About ...",                  IDM_ABOUT
+        MENUITEM "Enter",                       IDM_ABOUT
     END
 END
 
@@ -71,18 +73,26 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 134, 91
+IDD_ABOUTBOX DIALOGEX 0, 0, 420, 182
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Enter"
+CAPTION "MVC"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Enter 1",ID_ENTER1,6,70,50,14,WS_GROUP
-    EDITTEXT        IDC_EDIT1,6,43,40,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Enter 2",ID_ENTER2,77,70,50,14
-    LTEXT           "Enter the elements",IDC_STATIC,35,14,63,15
-    EDITTEXT        IDC_EDIT2,87,43,40,14,ES_AUTOHSCROLL
-    LTEXT           "KSet 1",IDC_STATIC,7,21,21,10
-    LTEXT           "KSet 2",IDC_STATIC,105,21,22,9
+    DEFPUSHBUTTON   "Enter 1",ID_ENTER1,6,50,33,14,WS_GROUP
+    EDITTEXT        IDC_EDIT1,6,31,40,15,ES_AUTOHSCROLL
+    PUSHBUTTON      "Enter 2",ID_ENTER2,70,50,33,14
+    LTEXT           "Enter the elements",IDC_STATIC,26,7,69,15
+    EDITTEXT        IDC_EDIT2,63,31,40,15,ES_AUTOHSCROLL
+    LTEXT           "KSet 1",IDC_STATIC,6,17,21,11
+    LTEXT           "KSet 2",IDC_STATIC,82,17,21,11
+    LTEXT           "",IDC_STATIC_1,6,66,24,101
+    LTEXT           "",IDC_STATIC_2,77,66,24,101
+    PUSHBUTTON      "Intersection",IDC_INTERSECTION,142,33,50,14
+    PUSHBUTTON      "Union",IDC_UNION,141,78,50,14
+    PUSHBUTTON      "Elemenst",IDC_ELEMENTS,142,125,50,14
+    LTEXT           "",IDC_STATIC_INTERSECTION,210,33,180,14
+    LTEXT           "",IDC_STATIC_UNION,210,78,180,14
+    EDITTEXT        IDC_CONTROL_ELEMENTS,214,125,190,14,ES_AUTOHSCROLL
 END
 
 
@@ -97,9 +107,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 127
+        RIGHTMARGIN, 413
         TOPMARGIN, 7
-        BOTTOMMARGIN, 84
+        BOTTOMMARGIN, 175
     END
 END
 #endif    // APSTUDIO_INVOKED
