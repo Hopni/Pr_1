@@ -20,15 +20,14 @@ class Controller;
 template<class T>
 class View
 {
-	Model<T> model_1, model_2;
+	Controller<T> cnt;
 public:
 	View() {};
-	View(Model<T>& m1, Model<T>& m2)
+	View(Controller<T>& c)
 	{
-		model_1 = m1;
-		model_2 = m2;
+		cnt = c;
 	}
-	INT_PTR CALLBACK ButtonEvent(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+	INT_PTR CALLBACK ButtonEvents(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		UNREFERENCED_PARAMETER(lParam);
 		switch (message)
@@ -41,34 +40,49 @@ public:
 			{
 			case ID_ENTER1:
 			{
+				
 				auto item = GetDlgItemInt(hDlg, IDC_EDIT1, NULL, true);
-				cnt.AddItem_1(item, hDlg);
+				SetDlgItemText(hDlg, IDC_EDIT1, L" ");
+				
+				this->Display(cnt.AddItem_1(item), hDlg, IDC_STATIC_1);
 				break;
 			}
 			case ID_ENTER2:
 			{
 				auto item = GetDlgItemInt(hDlg, IDC_EDIT2, NULL, true);
-				cnt.AddItem_2(item, hDlg);
+				SetDlgItemText(hDlg, IDC_EDIT2, L" ");
+				this->Display(cnt.AddItem_2(item), hDlg, IDC_STATIC_2);
 				break;
 			}
 			case IDC_INTERSECTION:
 			{
-				cnt.Intersection(hDlg);
+				this->Display(cnt.Intersection(), hDlg, IDC_STATIC_INTERSECTION);
 				break;
 			}
 			case IDC_UNION:
 			{
-				cnt.Union(hDlg);
+				this->Display(cnt.Union(), hDlg, IDC_STATIC_UNION);
 				break;
 			}
 			case IDC_ELEMENTS:
 			{
-				cnt.Elements(hDlg);
+				this->Display(cnt.Union(), hDlg, IDC_CONTROL_ELEMENTS);
+				break;
+			}
+			case IDC_CLEAR:
+			{
+				cnt.Clear();
+				SetDlgItemText(hDlg, IDC_EDIT1, L" ");
+				SetDlgItemText(hDlg, IDC_EDIT2, L" ");
+				SetDlgItemText(hDlg, IDC_STATIC_1, L" ");
+				SetDlgItemText(hDlg, IDC_STATIC_2, L" ");
+				SetDlgItemText(hDlg, IDC_STATIC_UNION, L" ");
+				SetDlgItemText(hDlg, IDC_STATIC_INTERSECTION, L" ");
+				SetDlgItemText(hDlg, IDC_CONTROL_ELEMENTS, L" ");
 				break;
 			}
 			case IDCANCEL:
 				EndDialog(hDlg, LOWORD(wParam));
-				DestroyWindow(GetParent(hDlg));
 				return (INT_PTR)TRUE;
 				break;
 			}
@@ -76,14 +90,9 @@ public:
 		}
 		return (INT_PTR)FALSE;
 	}
-	void Display(HWND h, Model<T> m, int IDC)
+	void Display(wstring str, HWND h, int IDC)
 	{
-		basic_stringstream<TCHAR> str;
-		for (int i = 0; i < m.Size(); i++)
-		{
-			str << _T(' ') << m.Get_Pos(i);
-		}
-		SetDlgItemText(h, IDC, str.str().c_str());
+		SetDlgItemText(h, IDC, str.c_str());
 	}
 };
 
@@ -91,41 +100,43 @@ template<class T>
 class Controller
 {
 	Model<T> model_1, model_2;
-	View<T> view;
 public:
-	Controller(Model<T>& m1, Model<T>& m2, View<T>& v)
+	Controller() {};
+	Controller(Model<T>& m1, Model<T>& m2)
 	{
 		model_1 = m1;
 		model_2 = m2;
-		view = v;
 	}
-	void AddItem_1(T item, HWND h)
+	wstring AddItem_1(T item)
 	{
 		if (typeid(T) == typeid(item))
 		{
 			model_1.Insert(item);
-			view.Display(h, model_1, IDC_STATIC_1);
 		}
+		return model_1.Display();
 	}
-	void AddItem_2(T item, HWND h)
+	wstring AddItem_2(T item)
 	{
 		if (typeid(T) == typeid(item))
 		{
 			model_2.Insert(item);
-			view.Display(h, model_2, IDC_STATIC_2);
 		}
+		return model_2.Display();
 	}
-	void Intersection(HWND h)
+	wstring Intersection()
 	{
-		view.Display(h, model_1 * model_2, IDC_STATIC_INTERSECTION);
+		Model<T> res = model_1 * model_2;
+		return res.Display();
 	}
-	void Union(HWND h)
+	wstring Union()
 	{
-		view.Display(h, model_1 + model_2, IDC_STATIC_UNION);
+		Model<T> res = model_1 + model_2;
+		return res.Display();
 	}
-	void Elements(HWND h)
+	void Clear()
 	{
-		view.Display(h, model_1 + model_2, IDC_CONTROL_ELEMENTS);
+		model_1.Clear();
+		model_2.Clear();
 	}
 };
 
@@ -223,7 +234,7 @@ public:
 	void Erase(unsigned);
 	void Sort();
 	bool Search(T) const;
-	void Display();
+	wstring Display();
 	void Clear();
 	_iter begin();
 	_iter end();
@@ -334,7 +345,7 @@ template<typename T>
 void Model<T>::Sort()
 {
 	Node<T> *ptr, *s;
-	int value;
+	T value;
 	if (tail == NULL)
 	{
 		return;
@@ -405,18 +416,14 @@ bool Model<T>::Search(T value) const
 		return false;
 }
 template<typename T>
-void Model<T>::Display()
+wstring Model<T>::Display()
 {
-	Node<T> *temp;
-	if (tail == NULL)
+	basic_stringstream<TCHAR> str;
+	for (int i = 0; i < this->size; i++)
 	{
-		return;
+		str << _T(' ') << this->Get_Pos(i);
 	}
-	temp = tail;
-	while (temp != NULL)
-	{
-		temp = temp->next;
-	}
+	return str.str();
 }
 template<typename T>
 void Model<T>::Clear()
